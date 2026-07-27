@@ -1,0 +1,35 @@
+# Pipeline output — downloaded media, transcripts, generated knowledge bases
+data/
+*.mp4
+*.webm
+*.mkv
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+.mcp.json
+*.pem
+*.key
+credentials.json
+service-account*.json
+
+# The web UI saves its API key to data/.config.json — covered by data/ above.
+
+# Playwright
+.playwright-mcp/
+
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/

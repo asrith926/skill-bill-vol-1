@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block title %}Generating...{% endblock %}
+
+{% block content %}
+<div class="progress-layout animate-in">
+    <!-- Timeline (left) -->
+    <div class="progress-timeline">
+        <h3 class="progress-heading">Pipeline Progress</h3>
+        <div class="progress-stages stagger-children">
+            <div class="stage stage--pending" data-stage="discovery">
+                <div class="stage-icon">1</div>
+                <div class="stage-info">
+                    <div class="stage-name">Discovery</div>
+                    <div class="stage-detail">Waiting...</div>
+                </div>
+                <div class="stage-status"></div>
+            </div>
+            <div class="stage stage--pending" data-stage="transcripts">
+                <div class="stage-icon">2</div>
+                <div class="stage-info">
+                    <div class="stage-name">Transcripts</div>
+                    <div class="stage-detail">Waiting...</div>
+                </div>
+                <div class="stage-status"></div>
+            </div>
+            <div class="stage stage--pending" data-stage="download">
+                <div class="stage-icon">3</div>
+                <div class="stage-info">
+                    <div class="stage-name">Download</div>
+                    <div class="stage-detail">Waiting...</div>
+                </div>
+                <div class="stage-status"></div>
+            </div>
+            <div class="stage stage--pending" data-stage="screenshot_planning">
+                <div class="stage-icon">4</div>
+                <div class="stage-info">
+                    <div class="stage-name">Screenshot Planning</div>
+                    <div class="stage-detail">Waiting...</div>
+                </div>
+                <div class="stage-status"></div>
+            </div>
+            <div class="stage stage--pending" data-stage="capture">
+                <div class="stage-icon">5</div>
+                <div class="stage-info">
+                    <div class="stage-name">Frame Capture</div>
+                    <div class="stage-detail">Waiting...</div>
+                </div>
+                <div class="stage-status"></div>
+            </div>
+            <div class="stage stage--pending" data-stage="generation">
+                <div class="stage-icon">6</div>
+                <div class="stage-info">
+                    <div class="stage-name">Markdown Generation</div>
+                    <div class="stage-detail">Waiting...</div>
+                </div>
+                <div class="stage-status"></div>
+            </div>
+            {% if refine %}
+            <div class="stage stage--pending" data-stage="refinement">
+                <div class="stage-icon">7</div>
+                <div class="stage-info">
+                    <div class="stage-name">Refinement</div>
+                    <div class="stage-detail">AI lesson extraction</div>
+                </div>
+                <div class="stage-status"></div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Log panel (right) -->
+    <div class="progress-log-container">
+        <div class="progress-log-header">
+            <span class="progress-log-title">Build Log</span>
+            <div class="spinner"></div>
+        </div>
+        <div id="log-panel" class="progress-log"></div>
+    </div>
+</div>
+
+<!-- Completion overlay -->
+<div id="completion" class="completion">
+    <div class="completion-inner">
+        <div class="completion-check">&#10003;</div>
+        <h2 id="completion-title" class="completion-title"></h2>
+        <p class="completion-meta">Knowledge base generated successfully</p>
+        <div class="completion-actions">
+            <a id="view-link" href="#" class="btn btn-primary">View Knowledge Base &rarr;</a>
+            <a id="download-link" href="#" class="btn btn-secondary">Download as Skill (.zip)</a>
+        </div>
+    </div>
+</div>
+
+<style>
+.progress-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 2rem;
+    min-height: calc(100vh - 56px - 80px);
+    padding: 1rem 0;
+}
+
+.progress-heading {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: 1.25rem;
+}
+
+.progress-stages {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.stage {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 0.875rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius);
+    transition: all var(--transition);
+}
+
+.stage-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 600;
+    background: var(--surface-raised);
+    color: var(--text-muted);
+    flex-shrink: 0;
+    transition: all var(--transition);
+}
+
+.stage--active .stage-icon {
+    background: var(--accent-dim);
+    color: var(--accent);
+}
+
+.stage--complete .stage-icon {
+    background: rgba(52, 211, 153, 0.1);
+    color: var(--success);
+}
+
+.stage-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.stage-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text);
+    transition: color var(--transition);
+}
+
+.stage--pending .stage-name {
+    color: var(--text-muted);
+}
+
+.stage-detail {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 0.125rem;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.progress-log-container {
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.progress-log-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.progress-log-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.progress-log {
+    flex: 1;
+    padding: 1rem 1.25rem;
+    overflow-y: auto;
+    max-height: calc(100vh - 250px);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    line-height: 1.8;
+    color: var(--text-muted);
+}
+
+.log-line {
+    animation: fadeIn 0.2s ease;
+}
+
+.log-line:last-child {
+    color: var(--text-secondary);
+}
+
+/* Completion */
+.completion-inner {
+    text-align: center;
+    padding: 3rem 2rem;
+    margin-top: 2rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+}
+
+.completion-check {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(52, 211, 153, 0.1);
+    color: var(--success);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.completion-title {
+    margin-bottom: 0.375rem;
+}
+
+.completion-meta {
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.completion-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
+@media (max-width: 768px) {
+    .progress-layout {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/progress.js"></script>
+{% endblock %}

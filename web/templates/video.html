@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block title %}Video{% endblock %}
+
+{% block content %}
+<div class="video-layout">
+    <!-- Sidebar -->
+    <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle sidebar">&#9776;</button>
+    <aside id="sidebar" class="course-sidebar">
+        <div class="sidebar-header">
+            <h4 class="sidebar-course-title">{{ course_title }}</h4>
+        </div>
+        <nav class="sidebar-nav">
+            {% for video in videos %}
+            <a href="/course/{{ course_slug }}/{{ video.slug }}"
+               class="sidebar-item {% if video.slug == video_slug %}active{% endif %}">
+                <span class="sidebar-num">{{ "%02d" | format(video.number) }}</span>
+                <span class="sidebar-title">{{ video.title }}</span>
+            </a>
+            {% endfor %}
+        </nav>
+    </aside>
+
+    <!-- Content area -->
+    <div class="video-main">
+        <!-- Prev / Next navigation -->
+        <div class="video-nav">
+            {% if prev_video %}
+            <a href="/course/{{ course_slug }}/{{ prev_video.slug }}" class="video-nav-link">&larr; Previous</a>
+            {% else %}
+            <span></span>
+            {% endif %}
+            <a href="/course/{{ course_slug }}" class="video-nav-link video-nav-course">{{ course_title }}</a>
+            {% if next_video %}
+            <a href="/course/{{ course_slug }}/{{ next_video.slug }}" class="video-nav-link">Next &rarr;</a>
+            {% else %}
+            <span></span>
+            {% endif %}
+        </div>
+
+        <!-- Rendered markdown -->
+        <article class="video-content animate-fade">
+            {{ html_content | safe }}
+        </article>
+    </div>
+
+    <!-- Chapter navigation (right) -->
+    <nav class="chapter-nav" id="chapter-nav">
+        <h4 class="chapter-nav-title">Chapters</h4>
+        <div class="chapter-nav-links" id="chapter-nav-links"></div>
+    </nav>
+</div>
+
+<style>
+.video-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr 200px;
+    gap: 0;
+    min-height: calc(100vh - 56px - 80px);
+    margin: -2rem;
+}
+
+.sidebar-toggle {
+    display: none;
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 50;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 1.1rem;
+    cursor: pointer;
+}
+
+.course-sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border-subtle);
+    overflow-y: auto;
+    height: calc(100vh - 56px);
+    position: sticky;
+    top: 56px;
+}
+
+.sidebar-header {
+    padding: 1.25rem 1rem;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.sidebar-course-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+}
+
+.sidebar-nav {
+    padding: 0.5rem 0;
+}
+
+.sidebar-item {
+    display: flex;
+    align-items: baseline;
+    gap: 0.625rem;
+    padding: 0.625rem 1rem;
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    transition: all var(--transition);
+}
+
+.sidebar-item:hover {
+    background: var(--surface-hover);
+    border-left-color: var(--border);
+}
+
+.sidebar-item.active {
+    background: var(--accent-glow);
+    border-left-color: var(--accent);
+}
+
+.sidebar-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.sidebar-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.sidebar-item.active .sidebar-title {
+    color: var(--accent);
+}
+
+.video-main {
+    padding: 1.5rem 3rem 3rem;
+    max-width: 860px;
+}
+
+.video-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.video-nav-link {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color var(--transition);
+}
+
+.video-nav-link:hover {
+    color: var(--accent);
+}
+
+.video-nav-course {
+    color: var(--text-secondary);
+}
+
+/* Chapter nav */
+.chapter-nav {
+    position: sticky;
+    top: 72px;
+    height: fit-content;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+    padding: 1.5rem 1rem 1.5rem 0;
+    border-left: 1px solid var(--border-subtle);
+}
+
+.chapter-nav-title {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+    padding-left: 1rem;
+}
+
+.chapter-nav-links {
+    display: flex;
+    flex-direction: column;
+}
+
+.chapter-nav a {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    padding: 0.3rem 1rem;
+    border-left: 2px solid transparent;
+    transition: all var(--transition);
+    line-height: 1.5;
+}
+
+.chapter-nav a:hover {
+    color: var(--text-secondary);
+}
+
+.chapter-nav a.chapter-nav--active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+}
+
+@media (max-width: 1024px) {
+    .video-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .course-sidebar {
+        display: none;
+    }
+
+    .sidebar-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .course-sidebar.sidebar--open {
+        display: block;
+        position: fixed;
+        left: 0;
+        top: 56px;
+        width: 280px;
+        z-index: 50;
+    }
+
+    .chapter-nav {
+        display: none;
+    }
+
+    .video-main {
+        padding: 1.25rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/lightbox.js"></script>
+<script src="/static/js/app.js"></script>
+{% endblock %}

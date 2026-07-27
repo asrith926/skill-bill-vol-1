@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Library — Skill Bill{% endblock %}
+
+{% block content %}
+<div class="library-page animate-in">
+    <div class="library-header">
+        <h1>Your Library</h1>
+        {% if courses %}
+        <input type="text" id="library-search" class="input library-search" placeholder="Filter courses...">
+        {% endif %}
+    </div>
+
+    {% if courses %}
+    <div class="grid-courses stagger-children" id="course-grid">
+        {% for course in courses %}
+        <a href="/course/{{ course.slug }}" class="card course-card animate-in" data-title="{{ course.title | lower }}">
+            {% if course.thumbnail %}
+            <img src="{{ course.thumbnail }}" alt="" class="thumbnail" loading="lazy">
+            {% else %}
+            <div class="thumbnail-placeholder">No screenshots</div>
+            {% endif %}
+            <div class="course-card-body">
+                <h3 class="card-title">{{ course.title }}</h3>
+                <div class="course-card-meta">
+                    <span class="badge badge-amber">{{ course.video_count }} videos</span>
+                    {% if course.has_screenshots %}
+                    <span class="badge badge-green">Screenshots</span>
+                    {% else %}
+                    <span class="badge badge-purple">Transcript only</span>
+                    {% endif %}
+                    {% if course.is_pro %}
+                    <span class="badge badge--pro">Pro</span>
+                    {% endif %}
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="library-empty">
+        <p class="library-empty-text">No courses generated yet.</p>
+        <a href="/" class="btn btn-primary">Generate one &rarr;</a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.library-page {
+    padding: 1rem 0;
+}
+
+.library-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.library-search {
+    max-width: 280px;
+    font-size: 0.82rem;
+    padding: 0.625rem 1rem;
+}
+
+.course-card {
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.course-card-body {
+    padding: 1.25rem;
+}
+
+.course-card-meta {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.625rem;
+    flex-wrap: wrap;
+}
+
+.library-empty {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.library-empty-text {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+}
+</style>
+
+<script>
+(function() {
+    const search = document.getElementById('library-search');
+    if (!search) return;
+    const cards = document.querySelectorAll('.course-card');
+    search.addEventListener('input', function() {
+        const q = this.value.toLowerCase();
+        cards.forEach(card => {
+            const title = card.dataset.title || '';
+            card.style.display = title.includes(q) ? '' : 'none';
+        });
+    });
+})();
+</script>
+{% endblock %}

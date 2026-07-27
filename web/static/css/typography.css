@@ -1,0 +1,219 @@
+/* ============================================
+   Typography — JetBrains Mono (UI) + Newsreader (reading)
+   ============================================ */
+
+/* ---- Headings ---- */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text);
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+}
+
+h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+h2 {
+    font-size: 1.375rem;
+    font-weight: 500;
+}
+
+h3 {
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+h4 {
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+}
+
+/* ---- Body Text ---- */
+p, li, dd, figcaption {
+    font-family: 'Newsreader', Georgia, serif;
+    line-height: 1.75;
+    color: var(--text-secondary);
+}
+
+p {
+    margin-bottom: 1em;
+}
+
+a {
+    color: var(--accent);
+    text-decoration: none;
+    transition: color var(--transition);
+}
+
+a:hover {
+    color: var(--accent-hover);
+}
+
+strong {
+    font-weight: 600;
+    color: var(--text);
+}
+
+em {
+    font-style: italic;
+}
+
+small {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+}
+
+/* ---- Rendered Markdown Content ---- */
+.video-content {
+    max-width: 720px;
+    font-family: 'Newsreader', Georgia, serif;
+}
+
+.video-content h1 {
+    font-size: 1.75rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.video-content h2 {
+    font-size: 1.25rem;
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--accent);
+}
+
+.video-content h3 {
+    font-size: 1.05rem;
+    margin-top: 1.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.video-content p {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    margin-bottom: 1.25rem;
+    color: var(--text-secondary);
+}
+
+.video-content ul,
+.video-content ol {
+    margin-bottom: 1.25rem;
+    padding-left: 1.75rem;
+}
+
+.video-content li {
+    margin-bottom: 0.375rem;
+    font-size: 1.05rem;
+}
+
+.video-content blockquote {
+    border-left: 3px solid var(--accent);
+    margin: 1.5rem 0;
+    padding: 0.75rem 1.25rem;
+    background: var(--accent-glow);
+    border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.video-content blockquote p {
+    color: var(--text);
+    margin-bottom: 0;
+}
+
+/* ---- Code Blocks ---- */
+.video-content code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85em;
+    background: var(--surface);
+    padding: 0.15em 0.4em;
+    border-radius: 3px;
+    color: var(--accent);
+}
+
+.video-content pre {
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    margin: 1.5rem 0;
+    overflow-x: auto;
+    line-height: 1.6;
+}
+
+.video-content pre code {
+    background: none;
+    padding: 0;
+    font-size: 0.82rem;
+    color: var(--text);
+}
+
+/* ---- Inline Images (screenshots) ---- */
+.video-content img {
+    max-width: 100%;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    margin: 1.25rem 0;
+    cursor: pointer;
+    transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.video-content img:hover {
+    transform: scale(1.01);
+    box-shadow: var(--shadow-md);
+}
+
+/* ---- Links in Content ---- */
+.video-content a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-decoration-color: rgba(240, 180, 41, 0.3);
+    text-underline-offset: 2px;
+    transition: text-decoration-color var(--transition);
+}
+
+.video-content a:hover {
+    text-decoration-color: var(--accent);
+}
+
+/* ---- Tables ---- */
+.video-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    font-size: 0.9rem;
+}
+
+.video-content th,
+.video-content td {
+    padding: 0.625rem 0.875rem;
+    border: 1px solid var(--border-subtle);
+    text-align: left;
+}
+
+.video-content th {
+    background: var(--surface);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text);
+}
+
+.video-content td {
+    color: var(--text-secondary);
+}
+
+/* ---- Horizontal Rule ---- */
+.video-content hr {
+    border: none;
+    height: 1px;
+    background: var(--border-subtle);
+    margin: 2rem 0;
+}

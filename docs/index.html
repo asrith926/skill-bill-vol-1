@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skill Bill vol. 1 — YouTube courses, turned into Claude Code skills</title>
+<meta name="description" content="A pipeline that converts YouTube course playlists into structured, chapter-indexed markdown with inline screenshots — packaged as a SKILL.md bundle for Claude Code.">
+<meta property="og:title" content="Skill Bill vol. 1">
+<meta property="og:description" content="Turn any YouTube course into a Claude Code skill.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230a0a0b'/%3E%3Cpath d='M16 6l10 10-10 10L6 16z' fill='%23f0b429'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300;1,6..72,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0b; --bg-warm:#0d0d0e; --surface:#141416; --surface-raised:#1a1a1d;
+  --border:#2a2a2e; --border-subtle:#1e1e22;
+  --text:#e8e4de; --text-secondary:#a8a4a0; --text-muted:#6b6b70;
+  --accent:#f0b429; --accent-hover:#f5c542; --accent-dim:rgba(240,180,41,.12);
+  --purple:#a78bfa;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --serif:'Newsreader',Georgia,serif;
+  --spine:clamp(1.25rem,5vw,5.5rem);
+  --measure:34rem;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--bg); color:var(--text); font-family:var(--serif);
+  font-size:clamp(1rem,.97rem + .18vw,1.075rem); line-height:1.75;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+}
+img{max-width:100%; display:block; height:auto}
+a{color:inherit}
+::selection{background:var(--accent-dim); color:var(--accent-hover)}
+
+/* ---------- shell: one left spine everything hangs off ---------- */
+.wrap{max-width:76rem; margin:0 auto; padding-left:var(--spine); padding-right:var(--spine)}
+
+h1,h2,h3,h4,.mono{font-family:var(--mono); letter-spacing:-.01em}
+.eyebrow{
+  font-family:var(--mono); font-size:.7rem; font-weight:500;
+  text-transform:uppercase; letter-spacing:.22em; color:var(--text-muted);
+}
+.rule{height:1px; background:var(--border-subtle); border:0}
+
+/* ---------- nav ---------- */
+nav{
+  position:sticky; top:0; z-index:50; background:rgba(10,10,11,.86);
+  border-bottom:1px solid var(--border-subtle); backdrop-filter:blur(8px);
+}
+.nav-in{display:flex; align-items:center; justify-content:space-between; height:56px}
+.brand{
+  display:flex; align-items:center; gap:.6rem; font-family:var(--mono);
+  font-size:.78rem; font-weight:600; letter-spacing:.16em; text-transform:uppercase;
+  text-decoration:none;
+}
+.brand svg{width:9px; height:9px; fill:var(--accent); flex:none}
+.nav-links{display:flex; gap:1.6rem; font-family:var(--mono); font-size:.75rem}
+.nav-links a{color:var(--text-muted); text-decoration:none; transition:color .2s; white-space:nowrap}
+.nav-links a:hover{color:var(--accent)}
+/* Narrow viewports keep the brand and the one link that matters. */
+@media(max-width:38rem){
+  .brand{white-space:nowrap; letter-spacing:.12em}
+  .nav-links a:not(:last-child){display:none}
+}
+
+/* ---------- hero ---------- */
+.hero{padding:clamp(4.5rem,13vh,9rem) 0 clamp(3.5rem,8vh,6rem)}
+.hero .eyebrow{margin-bottom:clamp(1.5rem,4vh,2.5rem)}
+.wordmark{
+  font-family:var(--mono); font-weight:600;
+  font-size:clamp(2.8rem,11.5vw,8.5rem); line-height:.92; letter-spacing:-.045em;
+}
+.wordmark .vol{
+  display:block; color:var(--text-muted); font-weight:300;
+  font-size:clamp(1.4rem,4.4vw,3.2rem); letter-spacing:-.02em; margin-top:.15em;
+}
+.wordmark .vol b{color:var(--accent); font-weight:400}
+.deck{
+  font-size:clamp(1.25rem,1.05rem + .95vw,1.95rem); line-height:1.42;
+  font-weight:300; max-width:26ch; margin-top:clamp(2rem,5vh,3.25rem);
+  color:var(--text);
+}
+.deck em{font-style:italic; color:var(--accent)}
+.sub{color:var(--text-secondary); max-width:var(--measure); margin-top:1.4rem}
+.hero-meta{
+  display:flex; flex-wrap:wrap; gap:.5rem 1.75rem; margin-top:clamp(2.25rem,5vh,3rem);
+  font-family:var(--mono); font-size:.72rem; color:var(--text-muted);
+}
+.hero-meta span::before{content:'—'; color:var(--border); margin-right:.6rem}
+
+/* ---------- section scaffold ---------- */
+section{padding:clamp(3.5rem,9vh,7rem) 0}
+.sec-head{display:flex; align-items:baseline; gap:1.25rem; margin-bottom:2.75rem}
+.sec-head .num{font-family:var(--mono); font-size:.7rem; color:var(--accent); letter-spacing:.1em}
+.sec-head h2{font-size:clamp(1.4rem,1.15rem + .85vw,2.15rem); font-weight:500; letter-spacing:-.025em}
+
+/* ---------- prose w/ marginal note ---------- */
+.editorial{display:grid; grid-template-columns:minmax(0,1fr); gap:2.5rem}
+@media(min-width:60rem){.editorial{grid-template-columns:minmax(0,1.55fr) minmax(0,1fr); gap:clamp(3rem,7vw,6rem)}}
+.editorial p+p{margin-top:1.15rem}
+.editorial p{max-width:var(--measure)}
+.aside{
+  border-left:1px solid var(--border); padding-left:1.5rem;
+  font-family:var(--mono); font-size:.78rem; line-height:1.85; color:var(--text-secondary);
+  align-self:start;
+}
+.aside strong{color:var(--accent); font-weight:500; display:block; margin-bottom:.5rem;
+  font-size:.68rem; letter-spacing:.16em; text-transform:uppercase}
+
+/* ---------- transformation ---------- */
+.xform{display:grid; gap:1.25rem; align-items:stretch}
+@media(min-width:60rem){.xform{grid-template-columns:1fr auto 1fr; gap:clamp(1.5rem,3vw,2.75rem)}}
+.panel{
+  background:var(--surface); border:1px solid var(--border-subtle);
+  border-radius:8px; overflow:hidden; display:flex; flex-direction:column;
+}
+.panel-head{
+  display:flex; align-items:center; gap:.55rem; padding:.7rem 1rem;
+  border-bottom:1px solid var(--border-subtle); font-family:var(--mono);
+  font-size:.68rem; letter-spacing:.1em; text-transform:uppercase; color:var(--text-muted);
+}
+.dot{width:6px; height:6px; border-radius:50%; background:var(--border); flex:none}
+.panel.out .dot{background:var(--accent)}
+.panel-body{padding:1.1rem 1.15rem; font-family:var(--mono); font-size:.75rem; line-height:1.9;
+  color:var(--text-secondary); overflow-x:auto}
+.panel-body .t{color:var(--text-muted)}
+.panel-body .h{color:var(--accent)}
+.panel-body .k{color:var(--purple)}
+.panel-body .plain{color:var(--text)}
+.arrow{
+  display:none; align-self:center; font-family:var(--mono); color:var(--accent);
+  font-size:1.1rem;
+}
+@media(min-width:60rem){.arrow{display:block}}
+
+/* ---------- pipeline: editorial numbered rail ---------- */
+.stages{border-top:1px solid var(--border-subtle)}
+.stage{
+  display:grid; grid-template-columns:2.75rem minmax(0,1fr); gap:1rem;
+  padding:1.35rem 0; border-bottom:1px solid var(--border-subtle);
+  transition:background .25s;
+}
+@media(min-width:60rem){
+  .stage{grid-template-columns:3.5rem 11rem minmax(0,1fr); gap:1.75rem; align-items:baseline}
+}
+.stage:hover{background:linear-gradient(90deg,rgba(240,180,41,.045),transparent 55%)}
+.stage-n{font-family:var(--mono); font-size:.7rem; color:var(--accent); padding-top:.35rem}
+.stage-mod{font-family:var(--mono); font-size:.8rem; color:var(--text); font-weight:500}
+.stage-txt{color:var(--text-secondary); font-size:.98rem; max-width:46ch}
+@media(max-width:59.99rem){
+  .stage-txt{grid-column:2}
+  .stage-mod{margin-bottom:.3rem}
+}
+
+/* ---------- shots ---------- */
+.shot{margin-top:clamp(2rem,5vh,3.5rem)}
+.shot img{
+  border:1px solid var(--border); border-radius:10px;
+  box-shadow:0 24px 70px -30px rgba(0,0,0,.95);
+}
+.shot figcaption{
+  font-family:var(--mono); font-size:.72rem; color:var(--text-muted);
+  margin-top:.95rem; padding-left:.1rem;
+}
+.shot figcaption b{color:var(--text-secondary); font-weight:400}
+.shots-pair{display:grid; gap:clamp(2rem,5vh,3.5rem)}
+@media(min-width:64rem){.shots-pair{grid-template-columns:1fr 1fr; gap:clamp(1.5rem,3vw,2.5rem)}}
+
+/* ---------- pull quote ---------- */
+.pull{
+  border-left:2px solid var(--accent); padding:.35rem 0 .35rem 1.75rem;
+  margin:clamp(2rem,5vh,3rem) 0; max-width:44rem;
+}
+.pull p{font-size:clamp(1.15rem,1.02rem + .5vw,1.5rem); line-height:1.5; font-weight:300}
+.pull .attrib{font-family:var(--mono); font-size:.7rem; color:var(--text-muted);
+  letter-spacing:.14em; text-transform:uppercase; margin-top:1rem}
+
+/* ---------- code ---------- */
+pre{
+  background:var(--surface); border:1px solid var(--border-subtle); border-radius:8px;
+  padding:1.15rem 1.25rem; overflow-x:auto; font-family:var(--mono);
+  font-size:.76rem; line-height:1.85; color:var(--text-secondary);
+}
+pre .c{color:var(--text-muted)}
+pre .a{color:var(--accent)}
+pre .p{color:var(--purple)}
+pre b{color:var(--text); font-weight:400}
+.code-label{
+  font-family:var(--mono); font-size:.68rem; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--text-muted); margin-bottom:.75rem;
+}
+
+/* ---------- modes table ---------- */
+.modes{width:100%; border-collapse:collapse; font-size:.9rem; margin-top:.5rem}
+.modes th,.modes td{text-align:left; padding:.75rem .5rem; border-bottom:1px solid var(--border-subtle)}
+.modes th{font-family:var(--mono); font-size:.68rem; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--text-muted); font-weight:500}
+.modes th:first-child{width:38%}
+.modes td:first-child{color:var(--text-secondary); font-family:var(--mono); font-size:.78rem}
+.modes .pro{color:var(--accent)}
+.modes tr:last-child td{border-bottom:0}
+
+/* ---------- cta ---------- */
+.cta{
+  display:inline-flex; align-items:center; gap:.7rem; text-decoration:none;
+  font-family:var(--mono); font-size:.82rem; font-weight:500;
+  background:var(--accent); color:#0a0a0b; padding:.8rem 1.4rem; border-radius:6px;
+  transition:background .2s, transform .2s;
+}
+.cta:hover{background:var(--accent-hover); transform:translateY(-1px)}
+.cta.ghost{background:transparent; color:var(--text-secondary); border:1px solid var(--border)}
+.cta.ghost:hover{color:var(--accent); border-color:var(--accent)}
+.cta-row{display:flex; flex-wrap:wrap; gap:.85rem; margin-top:2rem}
+
+/* ---------- footer ---------- */
+footer{border-top:1px solid var(--border-subtle); padding:2.5rem 0 3.5rem; margin-top:clamp(3rem,8vh,6rem)}
+.foot-in{display:flex; flex-wrap:wrap; justify-content:space-between; gap:1.25rem;
+  font-family:var(--mono); font-size:.72rem; color:var(--text-muted)}
+.foot-in a{color:var(--text-secondary); text-decoration:none; transition:color .2s}
+.foot-in a:hover{color:var(--accent)}
+
+/* ---------- reveal ----------
+   Scoped to .js so content is never hidden when scripting is off. */
+.js .rv{opacity:0; transform:translateY(14px); transition:opacity .8s cubic-bezier(.16,1,.3,1), transform .8s cubic-bezier(.16,1,.3,1)}
+.js .rv.in{opacity:1; transform:none}
+@media(prefers-reduced-motion:reduce){
+  .js .rv{opacity:1; transform:none; transition:none}
+  .cta:hover{transform:none}
+  *{animation:none!important}
+}
+</style>
+<script>document.documentElement.className+=' js';</script>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-in">
+    <a class="brand" href="#top">
+      <svg viewBox="0 0 32 32"><path d="M16 2l14 14-14 14L2 16z"/></svg>
+      Skill Bill
+    </a>
+    <div class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#interface">Interface</a>
+      <a href="https://github.com/asrith926/skill-bill-vol-1">GitHub&nbsp;↗</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero wrap" id="top">
+  <p class="eyebrow">YouTube&nbsp; →&nbsp; Claude Code</p>
+  <h1 class="wordmark">Skill&nbsp;Bill<span class="vol">vol.&nbsp;<b>1</b></span></h1>
+  <p class="deck">Good technical content lives in video, which is the <em>worst possible format</em> for an agent to read.</p>
+  <p class="sub">Skill Bill takes a playlist URL and hands back a chapter-indexed knowledge base — transcripts, screenshots captured where they matter, and a <span class="mono" style="font-size:.9em">SKILL.md</span> that tells Claude Code when to reach for it.</p>
+  <div class="cta-row">
+    <a class="cta" href="https://github.com/asrith926/skill-bill-vol-1">View on GitHub</a>
+    <a class="cta ghost" href="#how">See how it works</a>
+  </div>
+  <div class="hero-meta">
+    <span>Python + FastAPI</span>
+    <span>7-stage pipeline</span>
+    <span>189 tests</span>
+    <span>MIT</span>
+  </div>
+</header>
+
+<section class="wrap rv" id="why">
+  <div class="sec-head"><span class="num">01</span><h2>The conversion</h2></div>
+  <div class="editorial">
+    <div>
+      <p>A twelve-part course is three hours you have to sit through, and none of it is greppable. The information an agent needs is in there — buried in narration, split across chapters, and often shown on screen rather than said out loud.</p>
+      <p>So the pipeline pulls all three. Transcripts give the words. Chapter markers give the structure. Frame extraction gives the parts that were only ever drawn, typed, or pointed at.</p>
+      <p>What comes out is markdown an agent can navigate the way a person navigates a table of contents — index first, one lesson at a time, jump by heading.</p>
+    </div>
+    <div class="aside">
+      <strong>Output shape</strong>
+      course-slug/<br>
+      &nbsp;&nbsp;SKILL.md<br>
+      &nbsp;&nbsp;index.md<br>
+      &nbsp;&nbsp;01-lesson.md<br>
+      &nbsp;&nbsp;02-lesson.md<br>
+      &nbsp;&nbsp;assets/01/<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;02-14.png<br>
+      &nbsp;&nbsp;topics.json
+    </div>
+  </div>
+
+  <div class="xform" style="margin-top:clamp(2.5rem,6vh,4rem)">
+    <div class="panel">
+      <div class="panel-head"><span class="dot"></span>Source</div>
+      <div class="panel-body">
+        <span class="t">▸</span> <span class="plain">Deep Learning · Chapter 1</span><br>
+        <span class="t">&nbsp;&nbsp;&nbsp;18:40 · 12 chapters</span><br><br>
+        <span class="t">&nbsp;&nbsp;&nbsp;audio narration</span><br>
+        <span class="t">&nbsp;&nbsp;&nbsp;on-screen diagrams</span><br>
+        <span class="t">&nbsp;&nbsp;&nbsp;auto-captions</span><br><br>
+        <span class="t">&nbsp;&nbsp;&nbsp;unreadable to an agent</span>
+      </div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="panel out">
+      <div class="panel-head"><span class="dot"></span>01-what-is-a-neural-network.md</div>
+      <div class="panel-body">
+        <span class="h">## [08:38] Edge detection</span><br><br>
+        <span class="plain">But if I told you, hey, sit</span><br>
+        <span class="plain">down and write a program</span><br>
+        <span class="plain">that takes a 28x28 grid…</span><br><br>
+        <span class="k">![slide_transition]</span><br>
+        <span class="k">(./assets/01/08-52.png)</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<section class="wrap rv" id="how">
+  <div class="sec-head"><span class="num">02</span><h2>Seven stages</h2></div>
+  <div class="stages">
+    <div class="stage"><span class="stage-n">01</span><span class="stage-mod">downloader.py</span><span class="stage-txt">Flat playlist discovery through yt-dlp — one request for the whole course, no per-video calls.</span></div>
+    <div class="stage"><span class="stage-n">02</span><span class="stage-mod">transcript.py</span><span class="stage-txt">Transcript extraction with a three-tier fallback: local cache, then yt-dlp, then Playwright.</span></div>
+    <div class="stage"><span class="stage-n">03</span><span class="stage-mod">downloader.py</span><span class="stage-txt">Video download, cached by course slug so a re-run costs nothing.</span></div>
+    <div class="stage"><span class="stage-n">04</span><span class="stage-mod">analyzer.py</span><span class="stage-txt">Screenshot planning. Segments get classified by type, and talking-head stretches are planned to zero frames up front.</span></div>
+    <div class="stage"><span class="stage-n">05</span><span class="stage-mod">capturer.py</span><span class="stage-txt">ffmpeg frame extraction, then perceptual-hash dedup with a different threshold per segment type.</span></div>
+    <div class="stage"><span class="stage-n">06</span><span class="stage-mod">generator.py</span><span class="stage-txt">Jinja2 assembly — transcript and screenshots merged by timestamp so images land mid-sentence where they belong.</span></div>
+    <div class="stage"><span class="stage-n">07</span><span class="stage-mod">refiner.py</span><span class="stage-txt">Optional. Haiku captions each frame by vision, extracts numbered lesson steps, builds a keyword index.</span></div>
+  </div>
+
+  <div class="pull">
+    <p>Sampling a video on a fixed interval gets you four hundred near-identical frames of somebody's face.</p>
+    <p class="attrib">— why stage 05 exists</p>
+  </div>
+
+  <div class="editorial">
+    <div>
+      <p>Dedup thresholds vary by what's on screen. A <span class="mono" style="font-size:.85em">code-demo</span> segment is strict — a two-character diff between frames is a real change worth keeping. A <span class="mono" style="font-size:.85em">talking-head</span> segment is loose, because the face doesn't change and neither does the information.</p>
+      <p>That single decision is the difference between a knowledge base with forty useful images and one with four hundred useless ones.</p>
+    </div>
+    <div class="aside">
+      <strong>Hamming thresholds</strong>
+      code-demo &nbsp;&nbsp;&nbsp;&nbsp;4<br>
+      ui-walkthrough&nbsp;4<br>
+      whiteboard&nbsp;&nbsp;&nbsp;&nbsp;6<br>
+      slides &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8<br>
+      talking-head&nbsp;&nbsp;12<br>
+      <span style="color:var(--text-muted)">lower = stricter</span>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<section class="wrap rv" id="interface">
+  <div class="sec-head"><span class="num">03</span><h2>The interface</h2></div>
+  <p class="sub" style="margin-top:-1.25rem; margin-bottom:0">A local web UI, or a CLI if you'd rather not look at anything. Stages stream over a WebSocket as they run.</p>
+
+  <figure class="shot">
+    <img src="assets/web-ui-home.png" alt="Skill Bill home screen with a URL field, Base/Pro toggle and pipeline mode toggle" width="1440" height="780" loading="lazy">
+    <figcaption><b>Generate.</b> Paste a playlist or a single video. Base runs on local heuristics; Pro adds Haiku refinement.</figcaption>
+  </figure>
+
+  <div class="shots-pair" style="margin-top:clamp(2rem,5vh,3.5rem)">
+    <figure class="shot" style="margin-top:0">
+      <img src="assets/web-ui-video.png" alt="Reader view showing a lesson with a chapter rail" width="1440" height="780" loading="lazy">
+      <figcaption><b>Read.</b> Chapter rail right, lesson nav left, screenshots inline.</figcaption>
+    </figure>
+    <figure class="shot" style="margin-top:0">
+      <img src="assets/web-ui-library.png" alt="Library view listing generated courses" width="1440" height="780" loading="lazy">
+      <figcaption><b>Library.</b> Everything generated, one click from a packaged skill.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<hr class="rule">
+
+<section class="wrap rv" id="output">
+  <div class="sec-head"><span class="num">04</span><h2>What Claude gets</h2></div>
+  <div class="editorial">
+    <div>
+      <p>The packager writes the frontmatter — a description built from the course's actual topics, plus explicit routing rules: read the index first, load one lesson at a time, navigate by chapter heading instead of swallowing whole transcripts.</p>
+      <p>Unzip it into <span class="mono" style="font-size:.85em">~/.claude/skills/</span> and it's live.</p>
+      <div class="cta-row">
+        <a class="cta ghost" href="https://github.com/asrith926/skill-bill-vol-1#quickstart">Quickstart</a>
+      </div>
+    </div>
+    <div>
+      <p class="code-label">SKILL.md</p>
+<pre><span class="c">---</span>
+<span class="p">name</span>: neural-networks-deep-learning
+<span class="p">description</span>: &gt;
+  Reference knowledge base from Neural
+  Networks (4 videos) covering back-
+  propagation, gradient descent…
+  <b>Use when</b> user asks about these
+  topics or asks "what does the
+  course say about [topic]?"
+<span class="p">metadata</span>:
+  <span class="p">author</span>: <span class="a">Skill Bill</span>
+  <span class="p">version</span>: "1.0"
+  <span class="p">source</span>: youtube-playlist
+<span class="c">---</span></pre>
+    </div>
+  </div>
+
+  <table class="modes" style="margin-top:clamp(2.5rem,6vh,3.5rem)">
+    <thead><tr><th></th><th>Base</th><th class="pro">Pro</th></tr></thead>
+    <tbody>
+      <tr><td>transcripts</td><td>yes</td><td class="pro">yes</td></tr>
+      <tr><td>screenshots</td><td>local heuristics</td><td class="pro">filtered, vision-captioned</td></tr>
+      <tr><td>lesson steps</td><td>raw transcript</td><td class="pro">extracted, numbered</td></tr>
+      <tr><td>topic index</td><td>—</td><td class="pro">topics.json</td></tr>
+      <tr><td>api key</td><td>none</td><td class="pro">ANTHROPIC_API_KEY</td></tr>
+      <tr><td>rough cost</td><td>free</td><td class="pro">~$0.15–0.20 / video</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:.82rem; color:var(--text-muted); margin-top:1rem; font-family:var(--mono)">Cost figures are estimates from development runs, not guarantees.</p>
+</section>
+
+<footer>
+  <div class="wrap foot-in">
+    <span>Skill Bill vol. 1 — MIT</span>
+    <span>
+      <a href="https://github.com/asrith926/skill-bill-vol-1">Repository</a> ·
+      <a href="https://github.com/asrith926/skill-bill-vol-1#limits">Limits</a> ·
+      <a href="https://github.com/asrith926/skill-bill-vol-1/issues">Issues</a>
+    </span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var els = document.querySelectorAll('.rv');
+  if(!('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches){
+    els.forEach(function(e){e.classList.add('in')}); return;
+  }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); }
+    });
+  }, {rootMargin:'0px 0px -8% 0px', threshold:.06});
+  els.forEach(function(e){io.observe(e)});
+})();
+</script>
+</body>
+</html>

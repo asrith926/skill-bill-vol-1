@@ -1,0 +1,11 @@
+# {{ course_title }} -- Course Index
+
+**Source Playlist:** {{ playlist_url }}
+**Videos:** {{ total_videos }}
+**Generated:** {{ generated_date }}
+
+## Lessons
+
+{% for video in videos %}
+{{ video.number }}. [{{ video.title }}](./{{ video.filename }})
+{% endfor %}

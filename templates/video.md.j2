@@ -1,0 +1,30 @@
+# {{ video_title }}
+
+**Course:** {{ course_title }}
+**Video:** {{ video_number }} of {{ total_videos }}
+**Duration:** {{ duration_formatted }}
+**Source:** {{ video_url }}
+{% if chapters %}**Chapters:** {{ chapters | join(' | ') }}{% endif %}
+
+---
+
+{% for section in sections %}
+## [{{ section.timestamp }}] {{ section.heading }}
+
+{% for block in section.content_blocks %}
+{% if block.type == "text" %}
+{{ block.content }}
+{% elif block.type == "screenshot" %}
+
+![{{ block.caption }}]({{ block.path }})
+
+{% endif %}
+{% endfor %}
+
+{% endfor %}
+---
+
+{% if linked_urls %}
+**Linked Resources:**
+{% for url in linked_urls %}- {{ url }}
+{% endfor %}{% endif %}

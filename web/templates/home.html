@@ -1,0 +1,484 @@
+{% extends "base.html" %}
+
+{% block title %}Skill Bill vol. 1{% endblock %}
+
+{% block content %}
+<div class="home-hero animate-in">
+    <div class="home-hero-inner">
+        <h1 class="home-title">Skill Bill<br>vol. 1</h1>
+        <p class="home-subtitle">Turn YouTube courses into structured knowledge for Claude Code</p>
+
+        {% if error %}
+        <div class="alert alert-error">{{ error }}</div>
+        {% endif %}
+
+        <form method="post" action="/generate" class="home-form">
+            <input
+                type="text"
+                name="url"
+                class="input home-input"
+                placeholder="Paste a YouTube playlist or video URL"
+                required
+                autofocus
+            />
+
+            <input type="hidden" name="tier" id="tier-input" value="base">
+            <input type="hidden" name="mode" id="mode-input" value="full">
+
+            <!-- Tier toggle: Base / Pro -->
+            <div class="home-tier-row">
+                <div class="toggle-group toggle-group--tier">
+                    <label class="toggle-pill toggle-pill--tier active" id="pill-base" title="Full pipeline with transcripts and screenshots">
+                        <span class="toggle-pill-label">Base</span>
+                    </label>
+                    <label class="toggle-pill toggle-pill--tier" id="pill-pro" title="AI-refined lessons with clean titles and concise steps">
+                        <span class="toggle-pill-label">Pro</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Mode toggle: Transcript Only / Full Pipeline -->
+            <div class="home-mode-row">
+                <div class="toggle-group">
+                    <label class="toggle-pill" id="pill-transcript">
+                        <span class="toggle-pill-label">Transcript Only</span>
+                    </label>
+                    <label class="toggle-pill active" id="pill-full">
+                        <span class="toggle-pill-label">Full Pipeline</span>
+                    </label>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary home-btn">Generate Knowledge Base</button>
+
+            <details class="home-advanced">
+                <summary class="home-advanced-toggle">Advanced Options</summary>
+                <div class="home-advanced-body">
+                    <div class="home-option">
+                        <label class="home-option-label">Browser Cookies</label>
+                        <select name="cookies_from" class="input home-select">
+                            <option value="">None</option>
+                            <option value="chrome">Chrome</option>
+                            <option value="firefox">Firefox</option>
+                            <option value="safari">Safari</option>
+                        </select>
+                    </div>
+                    <div class="home-option">
+                        <label class="home-option-label">
+                            <input type="checkbox" name="use_haiku" value="off">
+                            Disable Haiku classification
+                        </label>
+                    </div>
+                </div>
+            </details>
+        </form>
+
+        {% if has_courses %}
+        <a href="/library" class="home-library-link">or browse your library &rarr;</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- API Key Modal -->
+<div class="modal-overlay" id="api-key-modal">
+    <div class="modal">
+        <h2>Configure AI Provider</h2>
+        <p class="modal-subtitle">Select your AI provider and enter your API key</p>
+        <div class="provider-cards">
+            <label class="provider-card provider-card--active">
+                <input type="radio" name="provider" value="anthropic" checked>
+                <span class="provider-name">Anthropic</span>
+            </label>
+            <label class="provider-card provider-card--disabled">
+                <input type="radio" name="provider" value="openai" disabled>
+                <span class="provider-name">OpenAI</span>
+                <span class="provider-badge">Coming soon</span>
+            </label>
+            <label class="provider-card provider-card--disabled">
+                <input type="radio" name="provider" value="google" disabled>
+                <span class="provider-name">Google</span>
+                <span class="provider-badge">Coming soon</span>
+            </label>
+        </div>
+        <input type="password" id="api-key-input" class="input" placeholder="Paste your API key">
+        <button class="btn btn-primary" id="save-key-btn">Save & Continue</button>
+        <button class="btn btn-ghost" id="cancel-modal-btn">Cancel</button>
+    </div>
+</div>
+
+<style>
+.home-hero {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 56px - 80px);
+    padding: 2rem 0;
+}
+
+.home-hero-inner {
+    width: 100%;
+    max-width: 540px;
+    text-align: center;
+}
+
+.home-title {
+    font-size: 2.5rem;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    margin-bottom: 0.75rem;
+}
+
+.home-subtitle {
+    font-family: 'Newsreader', Georgia, serif;
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    margin-bottom: 2.5rem;
+    font-style: italic;
+}
+
+.home-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+}
+
+.home-input {
+    font-size: 0.95rem;
+    padding: 1rem 1.25rem;
+    text-align: center;
+}
+
+.home-tier-row {
+    display: flex;
+    justify-content: center;
+}
+
+.home-mode-row {
+    display: flex;
+    justify-content: center;
+}
+
+.home-btn {
+    width: 100%;
+    padding: 1rem;
+    font-size: 0.88rem;
+}
+
+.home-advanced {
+    width: 100%;
+    margin-top: 0.5rem;
+}
+
+.home-advanced-toggle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    text-align: center;
+    padding: 0.5rem;
+}
+
+.home-advanced-toggle:hover {
+    color: var(--text-secondary);
+}
+
+.home-advanced-body {
+    margin-top: 0.75rem;
+    padding: 1rem;
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.home-option {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    text-align: left;
+}
+
+.home-option-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.home-select {
+    font-size: 0.82rem;
+    padding: 0.5rem 0.75rem;
+}
+
+.home-library-link {
+    display: inline-block;
+    margin-top: 2rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    transition: color var(--transition);
+}
+
+.home-library-link:hover {
+    color: var(--accent);
+}
+
+/* ---- Tier Toggle (larger pills) ---- */
+.toggle-group--tier {
+    padding: 4px;
+    gap: 3px;
+}
+
+.toggle-pill--tier {
+    font-size: 0.92rem;
+    font-weight: 500;
+    padding: 0.7rem 1.75rem;
+    letter-spacing: 0.04em;
+}
+
+.toggle-pill--tier.active {
+    background: var(--accent-dim);
+    color: var(--accent);
+}
+
+.toggle-pill--tier#pill-pro.active {
+    background: var(--accent-dim);
+    color: var(--accent);
+    box-shadow: 0 0 16px rgba(240, 180, 41, 0.15), 0 0 4px rgba(240, 180, 41, 0.1);
+}
+
+/* ---- Modal ---- */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--transition-slow), visibility var(--transition-slow);
+}
+
+.modal-overlay.modal--visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    max-width: 480px;
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    box-shadow: var(--shadow-lg);
+    transform: translateY(12px);
+    transition: transform var(--transition-slow);
+}
+
+.modal-overlay.modal--visible .modal {
+    transform: translateY(0);
+}
+
+.modal h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.01em;
+}
+
+.modal-subtitle {
+    font-family: 'Newsreader', Georgia, serif;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-top: -0.5rem;
+}
+
+.provider-cards {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.provider-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 1rem 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: border-color var(--transition), background var(--transition);
+    background: var(--bg);
+    text-align: center;
+}
+
+.provider-card input[type="radio"] {
+    display: none;
+}
+
+.provider-card:hover {
+    border-color: var(--text-muted);
+}
+
+.provider-card--active {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+}
+
+.provider-card--active:hover {
+    border-color: var(--accent-hover);
+}
+
+.provider-card--disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.provider-card--disabled:hover {
+    border-color: var(--border);
+}
+
+.provider-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text);
+}
+
+.provider-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    font-weight: 400;
+    color: var(--text-muted);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+    border: none;
+    padding: 0.625rem 1.25rem;
+}
+
+.btn-ghost:hover {
+    color: var(--text);
+    background: var(--surface-hover);
+}
+</style>
+
+<script>
+(function() {
+    /* ---- Tier toggle ---- */
+    var pillBase = document.getElementById('pill-base');
+    var pillPro = document.getElementById('pill-pro');
+    var tierInput = document.getElementById('tier-input');
+    var modal = document.getElementById('api-key-modal');
+
+    function setTier(tier) {
+        tierInput.value = tier;
+        if (tier === 'base') {
+            pillBase.classList.add('active');
+            pillPro.classList.remove('active');
+        } else {
+            pillPro.classList.add('active');
+            pillBase.classList.remove('active');
+        }
+    }
+
+    pillBase.addEventListener('click', function() {
+        setTier('base');
+    });
+
+    pillPro.addEventListener('click', function() {
+        fetch('/api/key-status')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.has_key) {
+                    setTier('pro');
+                } else {
+                    showModal();
+                }
+            })
+            .catch(function() {
+                showModal();
+            });
+    });
+
+    /* ---- Mode toggle ---- */
+    var pillTranscript = document.getElementById('pill-transcript');
+    var pillFull = document.getElementById('pill-full');
+    var modeInput = document.getElementById('mode-input');
+
+    pillTranscript.addEventListener('click', function() {
+        modeInput.value = 'transcript_only';
+        pillTranscript.classList.add('active');
+        pillFull.classList.remove('active');
+    });
+
+    pillFull.addEventListener('click', function() {
+        modeInput.value = 'full';
+        pillFull.classList.add('active');
+        pillTranscript.classList.remove('active');
+    });
+
+    /* ---- Modal ---- */
+    function showModal() {
+        modal.classList.add('modal--visible');
+    }
+
+    function hideModal() {
+        modal.classList.remove('modal--visible');
+    }
+
+    document.getElementById('cancel-modal-btn').addEventListener('click', function() {
+        hideModal();
+        setTier('base');
+    });
+
+    document.getElementById('save-key-btn').addEventListener('click', function() {
+        var provider = document.querySelector('input[name="provider"]:checked');
+        var apiKey = document.getElementById('api-key-input').value.trim();
+        if (!provider || !apiKey) return;
+
+        fetch('/api/save-key', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                provider: provider.value,
+                api_key: apiKey
+            })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.status === 'saved') {
+                hideModal();
+                setTier('pro');
+            }
+        });
+    });
+
+    /* Close modal on overlay click */
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            hideModal();
+            setTier('base');
+        }
+    });
+})();
+</script>
+{% endblock %}

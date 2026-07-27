@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block title %}{{ course_title }}{% endblock %}
+
+{% block content %}
+<div class="course-layout animate-in">
+    <!-- Sidebar -->
+    <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle sidebar">&#9776;</button>
+    <aside id="sidebar" class="course-sidebar">
+        <div class="sidebar-header">
+            <h4 class="sidebar-course-title">{{ course_title }}</h4>
+        </div>
+        <nav class="sidebar-nav">
+            {% for video in videos %}
+            <a href="/course/{{ course_slug }}/{{ video.slug }}" class="sidebar-item">
+                <span class="sidebar-num">{{ "%02d" | format(video.number) }}</span>
+                <span class="sidebar-title">{{ video.title }}</span>
+            </a>
+            {% endfor %}
+        </nav>
+    </aside>
+
+    <!-- Main -->
+    <div class="course-main">
+        <h1>{{ course_title }}</h1>
+        <div class="course-meta">
+            <span class="badge badge-amber">{{ videos | length }} videos</span>
+            <a href="/download/{{ course_slug }}" class="btn btn-secondary btn-sm">Download as Skill (.zip)</a>
+        </div>
+        <p class="course-instructions">
+            Select a video from the sidebar to start reading. Each video contains the full transcript organized by chapter, with inline screenshots where available.
+        </p>
+
+        <div class="course-video-grid stagger-children">
+            {% for video in videos %}
+            <a href="/course/{{ course_slug }}/{{ video.slug }}" class="card course-video-card animate-in">
+                <span class="course-video-num">{{ "%02d" | format(video.number) }}</span>
+                <span class="course-video-title">{{ video.title }}</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+.course-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 0;
+    min-height: calc(100vh - 56px - 80px);
+    margin: -2rem;
+}
+
+.sidebar-toggle {
+    display: none;
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 50;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 1.1rem;
+    cursor: pointer;
+}
+
+.course-sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border-subtle);
+    overflow-y: auto;
+    height: calc(100vh - 56px);
+    position: sticky;
+    top: 56px;
+}
+
+.sidebar-header {
+    padding: 1.25rem 1rem;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.sidebar-course-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+}
+
+.sidebar-nav {
+    padding: 0.5rem 0;
+}
+
+.sidebar-item {
+    display: flex;
+    align-items: baseline;
+    gap: 0.625rem;
+    padding: 0.625rem 1rem;
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    transition: all var(--transition);
+}
+
+.sidebar-item:hover {
+    background: var(--surface-hover);
+    border-left-color: var(--border);
+}
+
+.sidebar-item.active {
+    background: var(--accent-glow);
+    border-left-color: var(--accent);
+}
+
+.sidebar-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.sidebar-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.sidebar-item:hover .sidebar-title {
+    color: var(--text);
+}
+
+.course-main {
+    padding: 2.5rem 3rem;
+}
+
+.course-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 1rem 0 1.5rem;
+}
+
+.btn-sm {
+    font-size: 0.75rem;
+    padding: 0.5rem 1rem;
+}
+
+.course-instructions {
+    color: var(--text-muted);
+    max-width: 600px;
+    margin-bottom: 2rem;
+}
+
+.course-video-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.course-video-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.875rem 1rem;
+    text-decoration: none;
+}
+
+.course-video-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.course-video-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--text);
+}
+
+@media (max-width: 768px) {
+    .course-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .course-sidebar {
+        position: fixed;
+        left: 0;
+        top: 56px;
+        width: 280px;
+        height: calc(100vh - 56px);
+        z-index: 50;
+        transform: translateX(-100%);
+        transition: transform var(--transition-slow);
+    }
+
+    .course-sidebar.sidebar--open {
+        transform: translateX(0);
+    }
+
+    .course-main {
+        padding: 1.5rem;
+    }
+}
+</style>
+
+<script>
+(function() {
+    const toggle = document.getElementById('sidebar-toggle');
+    const sidebar = document.getElementById('sidebar');
+    if (toggle && sidebar) {
+        toggle.addEventListener('click', () => sidebar.classList.toggle('sidebar--open'));
+    }
+})();
+</script>
+{% endblock %}
